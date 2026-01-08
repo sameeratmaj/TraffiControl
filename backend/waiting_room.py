@@ -1,9 +1,11 @@
 import time
 import uuid
+import os
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException
 from redis import Redis
 from pydantic import BaseModel
+from dotenv import load_dotenv
 
 
 app = FastAPI()
@@ -18,17 +20,15 @@ app.add_middleware(
 # ---------------------------------------------------------
 # PASTE YOUR REDIS CLOUD DETAILS HERE
 # ---------------------------------------------------------
-REDIS_HOST = "redis-15340.c12.us-east-1-4.ec2.cloud.redislabs.com"  # e.g., redis-18000.c1...
-REDIS_PORT = 15340                   # e.g., 18000
-REDIS_PASSWORD = "UJRWKGmxCs5TR6e1WjJkR31yQr4t3Lzq"
+
 # ---------------------------------------------------------
 
 # Connect to the remote Redis Cloud
 try:
     redis_client = Redis(
-        host=REDIS_HOST,
-        port=REDIS_PORT,
-        password=REDIS_PASSWORD,
+        host=os.getenv("REDIS_HOST"),
+        port=os.getenv("REDIS_PORT"),
+        password=os.getenv("REDIS_PASSWORD"),
         decode_responses=True # This makes sure we get Strings, not Bytes
     )
     redis_client.ping() # Test connection
