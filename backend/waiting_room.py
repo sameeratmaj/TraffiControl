@@ -16,7 +16,7 @@ app = FastAPI()
 # 2. CORS Setup (Allow your Vercel frontend to talk to this)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://traffi-control.vercel.app/demo.html"],  # In production, replace * with your Vercel URL
+    allow_origins=["https://traffi-control.vercel.app"],  # In production, replace * with your Vercel URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
