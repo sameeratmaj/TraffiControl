@@ -139,7 +139,7 @@
 
         async function resetSystem() {
             if(confirm("Are you sure you want to kick everyone out?")) {
-                await fetch(`${API_URL}/reset`, { method: "POST" });
+                await fetch(`${API_URL}/admin/reset`, { method: "POST" });
                 alert("System Reset Complete.");
             }
         }
