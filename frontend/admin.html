@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚦 Waiting Room Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f6f9; padding: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: center;}
+        .metric-title { color: #7f8c8d; font-size: 0.9em; font-weight: 600; text-transform: uppercase; }
+        .metric-value { font-size: 3em; font-weight: bold; color: #2c3e50; margin: 10px 0; }
+        .chart-container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); height: 400px; }
+        .controls { background: #2c3e50; color: white; padding: 25px; border-radius: 12px; display: flex; gap: 20px; align-items: center; }
+        input { padding: 10px; border-radius: 6px; border: none; width: 80px; text-align: center; font-size: 1.2em;}
+        button { padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        button:hover { background: #2980b9; }
+        button.danger { background: #e74c3c; }
+        button.danger:hover { background: #c0392b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚦 Mission Control</h1>
+            <div>Status: <span id="connection-status" style="color:orange">Connecting...</span></div>
+        </div>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="metric-title">👥 Waiting in Queue</div>
+                <div class="metric-value" id="waiting-count">--</div>
+            </div>
+            <div class="card" style="border-bottom: 4px solid #27ae60;">
+                <div class="metric-title">✅ Currently Active</div>
+                <div class="metric-value" id="active-count">--</div>
+            </div>
+             <div class="card">
+                <div class="metric-title">🔒 Max Capacity Limit</div>
+                <div class="metric-value" id="capacity-limit">--</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="trafficChart"></canvas>
+        </div>
+        <br>
+
+        <div class="controls">
+             <div style="flex-grow: 1;">
+                 <strong>⚙️ Live Configuration:</strong> Change Max Capacity
+             </div>
+             <input type="number" id="new-capacity-input" value="5" min="1">
+             <button onclick="updateCapacity()">Update Capacity</button>
+             <div style="border-left: 1px solid rgba(255,255,255,0.3); height: 30px; margin: 0 10px;"></div>
+             <button class="danger" onclick="resetSystem()">⛔ RESET SYSTEM</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+
+        // --- Chart Setup ---
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        const trafficChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [], // Time labels
+                datasets: [{
+                    label: 'Waiting in Queue',
+                    data: [],
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                    fill: true,
+                    tension: 0.3
+                }, {
+                    label: 'Active Users',
+                    data: [],
+                    borderColor: '#27ae60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.2)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true } },
+                animation: { duration: 0 } // Disable animation for real-time feel
+            }
+        });
+
+        // --- Core Logic ---
+        async function fetchStats() {
+            try {
+                const response = await fetch(`${API_URL}/admin/stats`);
+                const data = await response.json();
+
+                document.getElementById("connection-status").innerText = "🟢 Connected";
+                document.getElementById("connection-status").style.color = "green";
+
+                // Update Numbers
+                document.getElementById("waiting-count").innerText = data.waiting_in_queue;
+                document.getElementById("active-count").innerText = data.currently_active;
+                document.getElementById("capacity-limit").innerText = data.current_capacity_limit;
+
+                // Update Chart
+                const now = new Date().toLocaleTimeString();
+                if (trafficChart.data.labels.length > 20) {
+                    trafficChart.data.labels.shift(); // Keep chart moving
+                    trafficChart.data.datasets[0].data.shift();
+                    trafficChart.data.datasets[1].data.shift();
+                }
+                trafficChart.data.labels.push(now);
+                trafficChart.data.datasets[0].data.push(data.waiting_in_queue);
+                trafficChart.data.datasets[1].data.push(data.currently_active);
+                trafficChart.update();
+
+            } catch (error) {
+                document.getElementById("connection-status").innerText = "🔴 Disconnected";
+                document.getElementById("connection-status").style.color = "red";
+                console.error("Error fetching stats:", error);
+            }
+        }
+
+        // --- Controls ---
+        async function updateCapacity() {
+            const newCap = document.getElementById("new-capacity-input").value;
+            await fetch(`${API_URL}/admin/config`, {
+                method: "POST",
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ new_capacity: parseInt(newCap) })
+            });
+            alert("Capacity Updated!");
+        }
+
+        async function resetSystem() {
+            if(confirm("Are you sure you want to kick everyone out?")) {
+                await fetch(`${API_URL}/reset`, { method: "POST" });
+                alert("System Reset Complete.");
+            }
+        }
+
+        // Poll every 1 second
+        setInterval(fetchStats, 1000);
+        fetchStats(); // Initial call
+    </script>
+</body>
+</html>
