@@ -1,6 +1,6 @@
 (async function() {
     // ⚠️ IMPORTANT: Replace this with your deployed Render URL
-    const API_URL = "https://your-api-url.onrender.com"; 
+    const API_URL = "https://trafficontrol.onrender.com"; 
 
     let userId = localStorage.getItem("gatekeeper_id");
 
