@@ -103,9 +103,9 @@
                 document.getElementById("connection-status").style.color = "green";
 
                 // Update Numbers
-                document.getElementById("waiting-count").innerText = data.waiting_in_queue;
-                document.getElementById("active-count").innerText = data.currently_active;
-                document.getElementById("capacity-limit").innerText = data.current_capacity_limit;
+                document.getElementById("waiting-count").innerText = data.queued_users;
+                document.getElementById("active-count").innerText = data.active_users;
+                document.getElementById("capacity-limit").innerText = data.max_capacity;
                 console.log(data)
                 // Update Chart
                 const now = new Date().toLocaleTimeString();
