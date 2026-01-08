@@ -132,7 +132,7 @@
             await fetch(`${API_URL}/admin/config`, {
                 method: "POST",
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ new_capacity: parseInt(newCap) })
+                body: JSON.stringify({ max_capacity: parseInt(newCap) })
             });
             alert("Capacity Updated!");
         }
