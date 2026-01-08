@@ -106,7 +106,7 @@
                 document.getElementById("waiting-count").innerText = data.waiting_in_queue;
                 document.getElementById("active-count").innerText = data.currently_active;
                 document.getElementById("capacity-limit").innerText = data.current_capacity_limit;
-
+                console.log(data)
                 // Update Chart
                 const now = new Date().toLocaleTimeString();
                 if (trafficChart.data.labels.length > 20) {
