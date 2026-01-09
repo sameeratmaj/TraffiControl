@@ -106,6 +106,13 @@ def join():
 
 @app.get("/status/{user_id}")
 def get_status(user_id: str):
+
+    tombstone=redis_client.get(f"status:{user_id}")
+    if tombstone == "expired":
+        return {"status":"expired"}
+    if tombstone == "completed":
+        return{"status": "completed"}
+    
     # 1. Check if user is already Active
     # Also UPDATE their "last_seen" time (Heartbeat)
     score = redis_client.zscore("active_users", user_id)
@@ -115,9 +122,10 @@ def get_status(user_id: str):
         #return {"status": "admitted", "position": 0}
 
         time_spent = time.time()-score
-        
+
         if time_spent >SESSION_LIMIT:
             redis_client.zrem("active_users",user_id)
+            redis_client.setex(f"status:{user_id}",30,"expired")
             return {"status" : "expired"}
         
         return{
@@ -160,4 +168,5 @@ def reset_system():
 @app.post("/checkout/{user_id}")
 def checkout_user(user_id:str):
     redis_client.zrem('active_users',user_id)
+    redis_client.setex(f"status:{user_id}",30,"completed")
     return {"status":"completed"}
