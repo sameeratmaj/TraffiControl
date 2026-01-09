@@ -100,9 +100,32 @@ class ConfigUpdate(BaseModel):
 def join():
     import uuid
     user_id = str(uuid.uuid4())
-    # Add to queue with score = current time
-    redis_client.zadd("queue", {user_id: time.time()})
-    return {"user_id": user_id, "message": "Joined queue"}
+    
+    # 1. GET CURRENT CAPACITY LIMIT
+    # We fetch the limit you set in the dashboard (default to 5 if missing)
+    max_cap = redis_client.get("max_capacity")
+    limit = int(max_cap) if max_cap else 5
+
+    # 2. CHECK CURRENT CROWD SIZE
+    active_count = redis_client.zcard("active_users")
+
+    # 3. THE INSTANT DECISION
+    if active_count < limit:
+        # 🚀 VIP FAST-TRACK (Room is empty -> Enter immediately)
+        now = time.time()
+        
+        # A. Add to Active (For Ghost Killer)
+        redis_client.zadd("active_users", {user_id: now})
+        
+        # B. Start Session Timer (For 40s Limit) - CRITICAL!
+        redis_client.setex(f"session_start:{user_id}", 60, now)
+        
+        return {"user_id": user_id, "status": "active", "message": "Direct entry"}
+        
+    else:
+        # 🐢 WAITING ROOM (Room is full -> Get in line)
+        redis_client.zadd("queue", {user_id: time.time()})
+        return {"user_id": user_id, "status": "queued", "message": "Joined queue"}
 
 @app.get("/status/{user_id}")
 def get_status(user_id: str):
