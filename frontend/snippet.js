@@ -95,7 +95,11 @@
                     timerBox.style.display = "block";
                     // Only update if time_remaining is sent
                     if(d.time_remaining !== undefined) {
-                        document.getElementById("gk-countdown").innerText = d.time_remaining;
+                        const currentVal = parseInt(document.getElementById("gk-countdown").innerText);
+                        // Only update if the new number is SMALLER or if current is --
+                        if (isNaN(currentVal) || d.time_remaining < currentVal) {
+                             document.getElementById("gk-countdown").innerText = d.time_remaining;
+                        }
                     }
                 }
 
