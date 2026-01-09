@@ -118,15 +118,22 @@ def get_status(user_id: str):
     score = redis_client.zscore("active_users", user_id)
     if score:
         # User is active! Update their timestamp so they don't get kicked
-        #redis_client.zadd("active_users", {user_id: time.time()})
+        redis_client.zadd("active_users", {user_id: time.time()})
         #return {"status": "admitted", "position": 0}
+        start_key=f"session_start:{user_id}"
+        start_time=redis_client.get(start_key)
+        if not start_time:
+            start_time=time.time()
+            redis_client.setex(start_key,60,start_time)
+        else:
+            start_time=float(start_time)
+            time_spent = time.time()-score
 
-        time_spent = time.time()-score
-
-        if time_spent >SESSION_LIMIT:
-            redis_client.zrem("active_users",user_id)
-            redis_client.setex(f"status:{user_id}",30,"expired")
-            return {"status" : "expired"}
+            if time_spent >SESSION_LIMIT:
+                redis_client.zrem("active_users",user_id)
+                redis_client.delete(start_key)
+                redis_client.setex(f"status:{user_id}",30,"expired")
+                return {"status" : "expired"}
         
         return{
             "status":"active",
