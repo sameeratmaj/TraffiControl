@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configuration
-SESSION_LIMIT = 30
+SESSION_LIMIT = 40
 
 app = FastAPI()
 
