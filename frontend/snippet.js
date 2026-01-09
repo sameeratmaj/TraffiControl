@@ -72,7 +72,7 @@
 
                 // 💀 Case 1: EXPIRED (Time's up!)
                 if (d.status === "expired") {
-                    alert("Session Expired! You took too long.");
+                    //alert("Session Expired! You took too long.");
                     localStorage.removeItem("gatekeeper_id");
                     window.location.replace("timeout.html")
                     return;
