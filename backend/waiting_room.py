@@ -127,7 +127,7 @@ def get_status(user_id: str):
             redis_client.setex(start_key,60,start_time)
         else:
             start_time=float(start_time)
-            time_spent = time.time()-score
+            time_spent = time.time()-start_time
 
             if time_spent >SESSION_LIMIT:
                 redis_client.zrem("active_users",user_id)
