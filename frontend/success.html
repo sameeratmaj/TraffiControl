@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Successful | TraffiControl</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background-color: #d1fae5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+        .icon-check {
+            font-size: 40px;
+            color: #059669;
+        }
+        h1 { margin: 0 0 0.5rem; color: #111827; }
+        p { color: #6b7280; margin-bottom: 2rem; }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #059669;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .btn:hover { background-color: #047857; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon-circle">
+            <div class="icon-check">✓</div>
+        </div>
+        <h1>Booking Confirmed!</h1>
+        <p>Your ticket has been successfully purchased. A confirmation email has been sent to you.</p>
+        <a href="index.html" class="btn" onclick="clearSession()">Buy Another Ticket</a>
+    </div>
+
+    <script>
+        // Clean up the old session so they start fresh if they click back
+        function clearSession() {
+            localStorage.removeItem("user_id");
+        }
+        // Run on load just to be safe
+        clearSession();
+    </script>
+</body>
+</html>

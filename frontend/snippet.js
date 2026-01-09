@@ -1,8 +1,7 @@
 (async function() {
     // ⚠️ CONFIGURATION
     const API_URL = "https://trafficontrol.onrender.com"; 
-    const SUCCESS_URL = "https://google.com"; // Where to go after buying
-    const TIMEOUT_URL = "https://bing.com";   // Where to go if time runs out
+
 
     let userId = localStorage.getItem("gatekeeper_id");
     let isReconnecting = false;
@@ -75,7 +74,7 @@
                 if (d.status === "expired") {
                     alert("Session Expired! You took too long.");
                     localStorage.removeItem("gatekeeper_id");
-                    window.location.href = TIMEOUT_URL;
+                    window.location.replace("timeout.html")
                     return;
                 }
 
@@ -131,7 +130,7 @@
         try {
             await fetch(`${API_URL}/checkout/${userId}`, { method: "POST" });
             localStorage.removeItem("gatekeeper_id");
-            window.location.replace(SUCCESS_URL);
+            window.location.replace("success.html");
         } catch(e) {
             alert("Checkout failed. Check internet.");
         }

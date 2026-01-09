@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Expired</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fef2f2; /* Light Red Background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            border-top: 5px solid #ef4444; /* Red Top Border */
+        }
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background-color: #fee2e2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+        .icon-clock {
+            font-size: 40px;
+        }
+        h1 { margin: 0 0 0.5rem; color: #111827; }
+        p { color: #6b7280; margin-bottom: 2rem; }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #1f2937;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .btn:hover { background-color: #374151; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon-circle">
+            <div class="icon-clock">⌛</div>
+        </div>
+        <h1>Time's Up!</h1>
+        <p>Your 40-second session has expired to allow other users a fair chance.</p>
+        <a href="index.html" class="btn" onclick="clearSession()">Rejoin Queue</a>
+    </div>
+
+    <script>
+        function clearSession() {
+            localStorage.removeItem("user_id");
+        }
+        // Immediately clear the ID so they can't try to use the expired session
+        clearSession();
+    </script>
+</body>
+</html>
