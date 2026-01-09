@@ -11,6 +11,9 @@ from dotenv import load_dotenv
 # 1. Load Environment Variables
 load_dotenv()
 
+# Configuration
+SESSION_LIMIT = 30
+
 app = FastAPI()
 
 # 2. CORS Setup (Allow your Vercel frontend to talk to this)
@@ -108,8 +111,19 @@ def get_status(user_id: str):
     score = redis_client.zscore("active_users", user_id)
     if score:
         # User is active! Update their timestamp so they don't get kicked
-        redis_client.zadd("active_users", {user_id: time.time()})
-        return {"status": "admitted", "position": 0}
+        #redis_client.zadd("active_users", {user_id: time.time()})
+        #return {"status": "admitted", "position": 0}
+
+        time_spent = time.time()-score
+        
+        if time_spent >SESSION_LIMIT:
+            redis_client.zrem("active_users",user_id)
+            return {"status" : "expired"}
+        
+        return{
+            "status":"active",
+            "time_remaining":int(SESSION_LIMIT-time_spent)
+        }
 
     # 2. Check if user is in Queue
     rank = redis_client.zrank("queue", user_id)
@@ -142,3 +156,8 @@ def reset_system():
     redis_client.delete("queue")
     redis_client.delete("active_users")
     return {"message": "System reset"}
+
+@app.post("/checkout/{user_id}")
+def checkout_user(user_id:str):
+    redis_client.zrem('active_users',user_id)
+    return {"status":"completed"}

@@ -1,11 +1,22 @@
 (async function() {
-    // ⚠️ UPDATE THIS URL if needed
+    // ⚠️ CONFIGURATION
     const API_URL = "https://trafficontrol.onrender.com"; 
+    const SUCCESS_URL = "https://google.com"; // Where to go after buying
+    const TIMEOUT_URL = "https://bing.com";   // Where to go if time runs out
 
     let userId = localStorage.getItem("gatekeeper_id");
     let isReconnecting = false;
 
-    // --- 1. THE DESIGN (The Curtain) ---
+    // --- 1. HTML TEMPLATES ---
+    
+    // The Countdown Timer (Shown when Active)
+    const timerHTML = `
+        <div id="gk-timer" style="position:fixed; bottom:20px; right:20px; background:#e74c3c; color:white; padding:15px; border-radius:50px; font-family:sans-serif; font-weight:bold; font-size:20px; box-shadow:0 4px 10px rgba(0,0,0,0.3); z-index:10000; display:none;">
+            ⏱️ <span id="gk-countdown">--</span>s
+        </div>
+    `;
+
+    // The Waiting Room Curtain (Shown when Queued)
     const overlayHTML = `
         <div id="gk-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:sans-serif;">
             <h1 style="color:#e74c3c; font-size: 2rem;">🚦 Traffic Control</h1>
@@ -18,7 +29,7 @@
         </div>
     `;
 
-    // --- 2. JOIN LOGIC (Helper Function) ---
+    // --- 2. JOIN LOGIC ---
     async function joinQueue() {
         try {
             const r = await fetch(`${API_URL}/join`, { method: "POST" });
@@ -31,57 +42,77 @@
         }
     }
 
-    // Initialize if no ID exists
     if (!userId) {
         userId = await joinQueue();
     }
 
-    // --- 3. CHECK STATUS & AUTO-HEAL ---
+    // --- 3. CHECK STATUS LOOP ---
     const checkStatus = async () => {
-        if (!userId) return; // Stop if we failed to join
+        if (!userId) return; 
 
         try {
             const r = await fetch(`${API_URL}/status/${userId}`);
-            
-            // 🚨 FIX: If Server says "404 Not Found" (Reset happened), Re-join immediately!
+
+            // A. HANDLE RESET / 404 (Auto-Rejoin)
             if (r.status === 404) {
                 if(isReconnecting) return;
-
-                console.log("Ticket invalid (System Reset?). Getting new ticket...");
-                isReconnecting=true;
-                try{
+                console.log("Ticket invalid. Attempting auto-rejoin...");
+                isReconnecting = true;
+                try {
                     localStorage.removeItem("gatekeeper_id");
                     userId = await joinQueue();
-                }finally{
-                    isReconnecting=false;
+                } finally {
+                    isReconnecting = false;
                 }
-                return; // Restart loop next tick
+                return;
             }
 
-            const d = await r.json();
+            // B. HANDLE NORMAL RESPONSE
+            if (r.status === 200) {
+                const d = await r.json();
 
-            // 🚨 FIX: If position is undefined, don't show it.
-            if (d.position === undefined && d.status !== "admitted") {
-                 // Fallback: If status is weird, just assume admitted or retry
-                 return; 
-            }
-
-            if (d.status !== "admitted") {
-                // INJECT OVERLAY
-                if (!document.getElementById("gk-overlay")) {
-                    document.body.insertAdjacentHTML('beforeend', overlayHTML);
-                    document.body.style.overflow = "hidden";
+                // 💀 Case 1: EXPIRED (Time's up!)
+                if (d.status === "expired") {
+                    alert("Session Expired! You took too long.");
+                    localStorage.removeItem("gatekeeper_id");
+                    window.location.href = TIMEOUT_URL;
+                    return;
                 }
-                
-                // Update position
-                document.getElementById("gk-position").innerText = d.position;
-                
-            } else {
-                // REMOVE OVERLAY
-                const overlay = document.getElementById("gk-overlay");
-                if (overlay) {
-                    overlay.remove();
-                    document.body.style.overflow = "auto";
+
+                // 🟢 Case 2: ACTIVE (Show Website + Timer)
+                if (d.status === "active") {
+                    // Remove Curtain if it exists
+                    const overlay = document.getElementById("gk-overlay");
+                    if (overlay) { overlay.remove(); document.body.style.overflow = "auto"; }
+
+                    // Inject Timer if missing
+                    if(!document.getElementById("gk-timer")) {
+                        document.body.insertAdjacentHTML('beforeend', timerHTML);
+                    }
+                    
+                    // Show & Update Timer
+                    const timerBox = document.getElementById("gk-timer");
+                    timerBox.style.display = "block";
+                    // Only update if time_remaining is sent
+                    if(d.time_remaining !== undefined) {
+                        document.getElementById("gk-countdown").innerText = d.time_remaining;
+                    }
+                }
+
+                // 🔴 Case 3: QUEUED (Show Curtain)
+                if (d.status === "queued") {
+                    // Hide Timer
+                    if(document.getElementById("gk-timer")) {
+                        document.getElementById("gk-timer").style.display = "none";
+                    }
+
+                    // Inject Curtain if missing
+                    if (!document.getElementById("gk-overlay")) {
+                        document.body.insertAdjacentHTML('beforeend', overlayHTML);
+                        document.body.style.overflow = "hidden";
+                    }
+                    // Update Position Number
+                    document.getElementById("gk-position").innerText = d.position;
                 }
             }
         } catch (e) {
@@ -89,7 +120,21 @@
         }
     };
 
-    // Start the loop
-    setInterval(checkStatus, 3000); // More reliable than recursive setTimeout for this case
-    checkStatus(); // Run once immediately
+    // --- 4. BUY BUTTON LOGIC ---
+    // This attaches to the global window object so your HTML button can call it
+    window.buyTicket = async function() {
+        if(!userId) return;
+        try {
+            await fetch(`${API_URL}/checkout/${userId}`, { method: "POST" });
+            localStorage.removeItem("gatekeeper_id");
+            window.location.href = SUCCESS_URL;
+        } catch(e) {
+            alert("Checkout failed. Check internet.");
+        }
+    };
+
+    // --- 5. START ---
+    setInterval(checkStatus, 1000); // Check every 1s for accurate timer
+    checkStatus(); 
+
 })();
