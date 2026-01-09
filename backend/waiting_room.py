@@ -149,6 +149,7 @@ def get_status(user_id: str):
         if not start_time:
             start_time=time.time()
             redis_client.setex(start_key,60,start_time)
+            time_spent=0
         else:
             start_time=float(start_time)
             time_spent = time.time()-start_time
