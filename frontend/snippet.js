@@ -131,7 +131,7 @@
         try {
             await fetch(`${API_URL}/checkout/${userId}`, { method: "POST" });
             localStorage.removeItem("gatekeeper_id");
-            window.location.href = SUCCESS_URL;
+            window.location.replace(SUCCESS_URL);
         } catch(e) {
             alert("Checkout failed. Check internet.");
         }
