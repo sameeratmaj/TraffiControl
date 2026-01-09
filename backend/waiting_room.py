@@ -31,6 +31,7 @@ redis_client = redis.Redis(
     port=os.getenv("REDIS_PORT"),
     password=os.getenv("REDIS_PASSWORD"),
     decode_responses=True
+    max_connections=20
 )
 
 # --- CONFIGURATION ---
