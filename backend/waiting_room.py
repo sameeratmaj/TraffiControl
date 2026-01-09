@@ -37,7 +37,7 @@ redis_client = redis.Redis(
 # --- CONFIGURATION ---
 # We store these in Redis so we can update them on the fly
 DEFAULT_CAPACITY = 5
-INACTIVE_TIMEOUT =5 # Seconds (Short timeout for demo purposes)
+INACTIVE_TIMEOUT =15 # Seconds (Short timeout for demo purposes)
 
 # --- 4. THE MANAGER LOGIC (Integrated) ---
 async def run_queue_manager():
