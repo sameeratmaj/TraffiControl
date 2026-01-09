@@ -3,6 +3,7 @@
     const API_URL = "https://trafficontrol.onrender.com"; 
 
     let userId = localStorage.getItem("gatekeeper_id");
+    let isReconnecting = false;
 
     // --- 1. THE DESIGN (The Curtain) ---
     const overlayHTML = `
@@ -44,9 +45,16 @@
             
             // 🚨 FIX: If Server says "404 Not Found" (Reset happened), Re-join immediately!
             if (r.status === 404) {
+                if(isReconnecting) return;
+
                 console.log("Ticket invalid (System Reset?). Getting new ticket...");
-                localStorage.removeItem("gatekeeper_id");
-                userId = await joinQueue(); // Get new ID
+                isReconnecting=true;
+                try{
+                    localStorage.removeItem("gatekeeper_id");
+                    userId = await joinQueue();
+                }finally{
+                    isReconnecting=false;
+                }
                 return; // Restart loop next tick
             }
 
@@ -68,8 +76,6 @@
                 // Update position
                 document.getElementById("gk-position").innerText = d.position;
                 
-                // Check again in 2 seconds
-                setTimeout(checkStatus, 2000);
             } else {
                 // REMOVE OVERLAY
                 const overlay = document.getElementById("gk-overlay");
