@@ -56,8 +56,7 @@ I performed stress testing using **Locust** to determine the breaking point of t
 | **Max Throughput** | 25 RPS | CPU Bottleneck (0.1 vCPU limit) |
 
 **Stress Test Chart:**
-> ![Locust Stress Test Results]
-> (assets/locust_chart-100-users.png)
+> ![Locust Stress Test Results](assets/locust_chart-100-users.png)
 > *The yellow line shows latency spiking when CPU saturation is reached at ~80 users.*
 
 ---
