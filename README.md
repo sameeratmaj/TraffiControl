@@ -78,5 +78,49 @@ I performed stress testing using **Locust** to determine the breaking point of t
 
 ### 1. Clone the Repo
 ```bash
-git clone [https://github.com/yourusername/trafficontrol.git](https://github.com/yourusername/trafficontrol.git)
-cd trafficontrol
+git clone https://github.com/sameeratmaj/TraffiControl.git
+cd VIRTUAL-WAITING
+```
+
+### 2. Install Dependencies
+Create a virtual environment(recommended) and install the required packages:
+
+```bash
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+# Mac/Linux
+python3 -m venv venv
+source venv/bin/activate
+
+# Install libraries
+pip install -r requirements.txt
+```
+### 3. Configure Environment
+Create a `.env` file in the root directory to store your Redis credentials.
+*(Note: You can use a local Redis instance or a free cloud instance from Render/Upstash)*.
+
+```env
+# Example .env file
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=your_password_here
+```
+
+> **Security Note:** The `.env` file is included in `.gitignore` to prevent sensitive credentials from being exposed in public repositories.
+
+### 4. Run the Server
+Start the FastAPI backend with hot-reload enabled:
+
+```bash
+uvicorn backend.waiting_room:app --reload
+```
+
+### 5. Run Load Tests
+To simulate high traffic and view real-time metrics, run the Locust swarm:
+
+```bash
+# Start the Locust web interface
+locust
+```
