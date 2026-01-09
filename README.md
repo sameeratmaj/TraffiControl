@@ -57,7 +57,7 @@ I performed stress testing using **Locust** to determine the breaking point of t
 
 **Stress Test Chart:**
 > ![Locust Stress Test Results]
-> (assets/locust_chart(100,2).png)
+> (assets/locust_chart-100-users.png)
 > *The yellow line shows latency spiking when CPU saturation is reached at ~80 users.*
 
 ---
