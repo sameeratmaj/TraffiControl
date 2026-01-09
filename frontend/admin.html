@@ -115,8 +115,8 @@
                     trafficChart.data.datasets[1].data.shift();
                 }
                 trafficChart.data.labels.push(now);
-                trafficChart.data.datasets[0].data.push(data.waiting_in_queue);
-                trafficChart.data.datasets[1].data.push(data.currently_active);
+                trafficChart.data.datasets[0].data.push(data.queued_users);
+                trafficChart.data.datasets[1].data.push(data.active_users);
                 trafficChart.update();
 
             } catch (error) {
